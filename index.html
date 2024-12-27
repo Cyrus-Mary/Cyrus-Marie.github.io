@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Petit Jeu Romantique</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #ffeb3b;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+
+    .question {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .choice, .input-choice {
+      background: #ff6f61;
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      font-size: 1em;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    .choice:hover {
+      background: #ffeb3b;
+      color: #333;
+      transform: scale(1.1);
+    }
+
+    textarea {
+      width: 90%;
+      height: 100px;
+      padding: 10px;
+      font-size: 1em;
+      border: 2px solid #ffeb3b;
+      border-radius: 10px;
+      outline: none;
+      resize: none;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.8);
+      color: #333;
+    }
+
+    .submit-btn {
+      margin-top: 15px;
+      background: #4caf50;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #81c784;
+    }
+
+    .final-message {
+      font-size: 1.8em;
+      color: #ffeb3b;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8);
+    }
+
+    #access-code {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+    }
+    
+    input {
+      padding: 10px;
+      font-size: 1em;
+      border: 2px solid #ffeb3b;
+      border-radius: 10px;
+      outline: none;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #ff6f61;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ffeb3b;
+      color: #333;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="container" id="main-content">
+    <!-- Page d'accès-->
+     <div id="access-code">
+      <h1>Entrez votre code </h1>
+      <input type="text" id="code-input" placeholder="Code d'accès">
+      <button onclick="ValidateCode()">Accéder</button>
+     </div>
+
+     <!-- Questions cachées initialement -->
+  <div  id="questions-container" style="display: none;">
+    <h1>Petit Jeu Romantique</h1>
+    <p class="question" id="question-text">Quelle est la plus belle chose dans ma vie&nbsp;?</p>
+    <div class="choices" id="choices-container">
+      <button class="choice" onclick="nextQuestion(1)">Mon travail</button>
+      <button class="choice" onclick="nextQuestion(2)">Mon chien</button>
+      <button class="choice" onclick="nextQuestion(3)">Toi</button>
+    </div>
+    <div id="text-answer" style="display: none;">
+      <textarea id="custom-answer" placeholder="Écris ta réponse ici..."></textarea>
+      <button class="submit-btn" onclick="submitTextAnswer()">Valider</button>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    const allowedCode = "Princesse04"; // Code d'accès unique
+    const responses = [];
+    const questions = [
+      {
+        text: "Quelle est ma couleur préférée&nbsp;?",
+        choices: ["Rouge, comme l'amour", "Bleu, comme je t'aime", "Vert, comme tes yeux"],
+        image: "couleur.jpg"
+      },
+      {
+        text: "Selon toi, quelle à été la chose que tu as fait qui m'a le plus séduit(e), à nos débuts de fréquentation&nbsp;?",
+        type: "text",
+        image: "rencontre.jpg"
+      },
+      {
+        text: "Crois-tu que la masturbation peut nuire à une relation de couple&nbsp;? ",
+        choices : ["Totalement d'accord", "Moins d'accord", "N'est pas d'accord"],
+        image: "prob.jpg"
+      },
+      {
+        text: "Nomme une chose que tu aimerais faire qu'on n'a jamais faite ensemble&nbsp",
+        type: "text",
+        image: "ensemble.jpg"
+      },
+      {
+        text: "Qu'est ce qui t'a fait tomber amoureux de moi&nbsp;?",
+        type: "text",
+        image: "CMary.jpg"
+      },
+      {
+        text: "Quelle est la chose la plus touchante que j'ai faite pour toi&nbsp;?",
+        type: "text",
+        image: "Desert.jpg"
+      },
+      {
+        text: "Que ressens-tu lorsque nous nous embrassons&nbsp;?",
+        type: "text",
+        image: "amour.jpg"
+      },
+      {
+        text: "Quelle est la chose la plus folle que tu as faite par amour&nbsp;?",
+        type: "text",
+        image: "money.jpg"
+      },
+      {
+        text: "Qui t'a offert ton plus beau baiser&nbsp;?",
+        choices: ["Moi", "Ton ex", "Un autres"],
+        image: "baiser.jpg" 
+      },
+      {
+        text: "Combien d'enfant aimerais tu avoir&nbsp;?",
+        choices:["2", "4","6"],
+        image: "noetine.jpg"
+      },
+      {
+        text: "As-tu déjà tromper ton copain une fois&nbsp;?",
+        choices: ["Oui", "Non", "Pas vraiment"],
+        image: "noetine.jpg"
+      },
+      {
+        text: "Que pense-tu du sexe avant le mariage&nbsp;?",
+        type: "text",
+        image: "sexe.jpg"
+      },
+      {
+        text: "Qu'est ce que tu souhaite pour notre couple&nbsp;?",
+        type: "text",
+        image: "couple.jpg"
+      }
+    ];
+
+    
+    let currentQuestion = 0;
+
+    // Vérification du code 
+    function ValidateCode() {
+      const codeInput = document.getElementById("code-input").value;
+      if (codeInput === allowedCode) {
+        document.getElementById("access-code").style.display = "none";
+        document.getElementById("questions-container").style.display = "block";
+      } else {
+        alert("Code incorrect ! Veuillez réessayer.");
+      }
+    }
+
+    function updateQuestion() {
+      const questionElement = document.getElementById("question-text");
+      const choicesContainer = document.getElementById("choices-container");
+      const textAnswer = document.getElementById("text-answer");
+
+      const question = questions[currentQuestion];
+      document.body.style.backgroundImage = `url('${question.image}')`;
+
+      if (question.type === "text") {
+        choicesContainer.style.display = "none";
+        textAnswer.style.display = "block";
+        questionElement.innerHTML = question.text;
+      } else {
+        textAnswer.style.display = "none";
+        choicesContainer.style.display = "flex";
+
+        questionElement.innerHTML = question.text;
+        choicesContainer.innerHTML = "";
+        question.choices.forEach((choice, index) => {
+          const button = document.createElement("button");
+          button.className = "choice";
+          button.textContent = choice;
+          button.onclick = () => nextQuestion(index);
+          choicesContainer.appendChild(button);
+        });
+      }
+    }
+
+    function nextQuestion(choiceIndex) {
+      if (questions[currentQuestion].type !== "text") {
+        responses.push(questions[currentQuestion].choices[choiceIndex]);
+      }
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        updateQuestion();
+      } else {
+        sendResponses();
+        showFinalMessage();
+      }
+    }
+
+    function submitTextAnswer() {
+      const textResponse = document.getElementById("custom-answer").value.trim();
+      if (textResponse) {
+        responses.push(textResponse);
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          updateQuestion();
+        } else {
+          sendResponses();
+          showFinalMessage();
+        }
+      } else {
+        alert("Veuillez écrire une réponse avant de valider !");
+      }
+    }
+
+    function sendResponses() {
+      const email = "gnidehouecyrusmary@gmail.com"; // Remplace par ton e-mail
+      const subject = "Réponses du jeu romantique";
+      const body = `Voici les réponses choisies et écrites :\n\n${responses.join("\n")}`;
+      window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+
+    function showFinalMessage() {
+      document.getElementById("main-content").innerHTML = `
+        <h1>Merci d'avoir joué !</h1>
+        <p class="final-message">Tout ceci c'est dans le but d'apprendre encore plus sur toi et de savoir ce que tu veux vraiment pour cette relation&nbsp;! ❤️</p>
+      `;
+    }
+
+    // Initialise la première question
+    updateQuestion();
+  </script>
+</body>
+</html>
